@@ -15,4 +15,4 @@ app.post("/api/investor/order", (req, res) => {
   res.json({ placed: true });
 });
 
-app.listen(3000);
+module.exports = app;
