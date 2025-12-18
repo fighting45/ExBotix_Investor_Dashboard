@@ -4,7 +4,7 @@ const app = require("./app");
 const { verifyJWTToken } = require('./src/utils/jwtToken')
 const initializeSocket = require("./socket");
 const socket = require("socket.io");
-
+const {sequelize} = require('./models')
 const socketServer = http.createServer();
 
 const io = socket(socketServer, {
@@ -58,8 +58,8 @@ const socketPort = process.env.SOCKET_PORT;
 
 const startServer = async () => {
   try {
-    // await sequelize.authenticate();
-    // console.log('Connection to PostgreSQL has been established successfully.');
+    await sequelize.authenticate();
+    console.log('Connection to PostgreSQL has been established successfully.');
 
     server.listen(port, () => {
       console.log(`App is listening on port ${port}`);
