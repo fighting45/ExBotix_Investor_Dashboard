@@ -5,6 +5,7 @@ const { verifyJWTToken } = require('./src/utils/jwtToken')
 const initializeSocket = require("./socket");
 const socket = require("socket.io");
 const {sequelize} = require('./models')
+const priceService = require('./src/services/priceService');
 const socketServer = http.createServer();
 
 const io = socket(socketServer, {
@@ -61,6 +62,10 @@ const startServer = async () => {
     await sequelize.authenticate();
     console.log('Connection to PostgreSQL has been established successfully.');
 
+    // Start price update service
+    const updateInterval = process.env.PRICE_UPDATE_INTERVAL || 30000;
+    priceService.startPriceUpdates(parseInt(updateInterval));
+
     server.listen(port, () => {
       console.log(`App is listening on port ${port}`);
     });
@@ -79,6 +84,9 @@ const startServer = async () => {
 startServer();
 
 const exitHandler = () => {
+  // Stop price update service
+  priceService.stopPriceUpdates();
+
   if (server) {
     server.close(() => {
       console.log("Server closed");
