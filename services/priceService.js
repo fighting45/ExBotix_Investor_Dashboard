@@ -1,5 +1,5 @@
 const axios = require("axios");
-const { redisClient } = require("../../redis");
+const { redisClient } = require("../redis");
 
 const COINGECKO_IDS = {
   BTC: "bitcoin",

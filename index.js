@@ -1,11 +1,11 @@
 require("dotenv").config()
 const http = require("http");
 const app = require("./app");
-const { verifyJWTToken } = require('./src/utils/jwtToken')
+const { verifyJWTToken } = require('./utils/jwtToken')
 const initializeSocket = require("./socket");
 const socket = require("socket.io");
 const {sequelize} = require('./models')
-const priceService = require('./src/services/priceService');
+const priceService = require('./services/priceService');
 const socketServer = http.createServer();
 
 const io = socket(socketServer, {
