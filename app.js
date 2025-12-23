@@ -1,12 +1,24 @@
 const express = require("express");
-const app = express();
+const cors = require("cors");
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./config/swagger");
 const routes = require("./routes");
-const auth = require("./middleware/auth");
-const readOnly = require("./middleware/readOnly");
-
+const { unless } = require("express-unless");
+const auth = require("./middlewares/auth.js");
+const readOnly = require("./middlewares/readOnly.js");
+const { authenticateRoutes } = require("./config/unlessRoutes");
+const { authenticate } = require("./middlewares/auth.middleware");
+const requestLogger = require('./middlewares/requestLogger.js')
+const CustomError = require("./utils/CustomError");
+const globalErrorHandler = require("./controllers/error/errorController");
+const os = require('os')
+const path = require("path");
+const app = express();
 app.use(express.json());
+app.use(cors());
+app.use(express.json({ limit: '5mb' }));
+app.use(express.urlencoded({ limit: '5mb', extended: false }));
+app.use(express.static(path.join(__dirname, "public")));
 
 // Swagger documentation routes (before auth middleware)
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
@@ -15,54 +27,31 @@ app.get("/api-docs.json", (req, res) => {
   res.send(swaggerSpec);
 });
 
+app.use(requestLogger)
+
 app.use(auth);
 app.use(readOnly);
+
+authenticate.unless = unless;
+app.use(authenticate.unless(authenticateRoutes));
 
 app.get("/api/investor/overview", (req, res) => {
   res.json({ ok: true });
 });
-// app.get("/api/webhook", (req, res) => {
-//   res;
-// });
 
-// Price service test endpoints (for development/testing)
-app.get("/api/prices/health", async (req, res) => {
-  try {
-    const health = await priceService.getHealthStatus();
-    res.json(health);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.get("/api/prices/all", async (req, res) => {
-  try {
-    const prices = await priceService.getAllPrices();
-    const lastUpdate = await priceService.getLastUpdateTime();
-    res.json({
-      prices,
-      lastUpdate,
-      count: Object.keys(prices).length,
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.get("/api/prices/:symbol", async (req, res) => {
-  try {
-    const { symbol } = req.params;
-    const price = await priceService.getPrice(symbol.toUpperCase());
-    res.json({
-      symbol: symbol.toUpperCase(),
-      price,
-      quoteCurrency: "USDT",
-    });
-  } catch (error) {
-    res.status(404).json({ error: error.message });
-  }
-});
+require('./scheduler')
 
 app.use(routes);
+
+// app.all("*", (req, res, next) => {
+//   const err = new CustomError(
+//     `Can't find ${req.originalUrl} on the server!`,
+//     404
+//   );
+//   next(err);
+// });
+
+app.use(globalErrorHandler);
+
 
 module.exports = app;
