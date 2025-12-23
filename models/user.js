@@ -18,9 +18,15 @@ module.exports = (sequelize, DataTypes) => {
       },
       email: {
         type: Sequelize.STRING,
+        allowNull : false
       },
       password: {
         type: Sequelize.STRING,
+        allowNull : false
+      },
+      role: {
+        type: DataTypes.ENUM('Admin', 'Investor'),
+        allowNull: false,
       },
     },
     {
