@@ -48,6 +48,7 @@ const swaggerOptions = {
     path.join(__dirname, '../docs/investor/*.js'),
     path.join(__dirname, '../docs/prices/*.js'),
     path.join(__dirname, '../docs/auth/*.js'),
+    path.join(__dirname, '../docs/users/*.js'),
     path.join(__dirname, '../app.js'),
   ],
 };

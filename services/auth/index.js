@@ -9,15 +9,19 @@ const login = asyncErrorHandler(async (req, res) => {
     where: {
       email: req.body?.email,
     },
+    raw:true
   });
   if (response) {
-    const { password, ...rest } = response?.dataValues;
+    const { password, ...rest } = response;
+
     const isTrue = bcrypt.compareSync(req.body?.password, password);
+
     if (isTrue) {
-      response.device_token = req.body.device_token;
+      
       await response.save();
-      rest.device_token = req.body.device_token;
+
       const accessToken = generateToken(rest);
+
       res.status(STATUS_CODES.SUCCESS).json({
         statusCode: STATUS_CODES.SUCCESS,
         message: TEXTS.LOGIN,

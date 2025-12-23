@@ -29,8 +29,8 @@ app.get("/api-docs.json", (req, res) => {
 
 app.use(requestLogger)
 
-app.use(auth);
-app.use(readOnly);
+// app.use(auth);
+// app.use(readOnly);
 
 authenticate.unless = unless;
 app.use(authenticate.unless(authenticateRoutes));
