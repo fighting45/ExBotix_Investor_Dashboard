@@ -5,7 +5,6 @@ const swaggerSpec = require("./config/swagger");
 const routes = require("./routes");
 const auth = require("./middleware/auth");
 const readOnly = require("./middleware/readOnly");
-const priceService = require("./services/priceService");
 
 app.use(express.json());
 
