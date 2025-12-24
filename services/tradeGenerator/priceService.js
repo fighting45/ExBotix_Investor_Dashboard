@@ -17,6 +17,7 @@ const COINGECKO_IDS = {
   AVAX: "avalanche-2",
   ENT: "eternity",
   RIO: "realio-network",
+  SUI: "sui",
 };
 
 // Module-level state
@@ -25,7 +26,7 @@ let isUpdating = false;
 
 //Start background price updates
 
-function startPriceUpdates(intervalMs = 30000) {
+function startPriceUpdates(intervalMs = 60000) {
   console.log(`Starting price update service (interval: ${intervalMs}ms)`);
 
   // Initial fetch
@@ -68,7 +69,7 @@ async function updatePrices() {
       const priceData = response.data[coinId];
       if (priceData && priceData.usd) {
         const price = priceData.usd;
-        await redisClient.setex(`price:${symbol}:USDT`, 120, price.toString());
+        await redisClient.setex(`price:${symbol}:USDT`, 300, price.toString());
         updatedCount++;
       } else {
         console.warn(`No price data found for ${symbol} (${coinId})`);

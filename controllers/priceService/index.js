@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const priceService = require("../../services/priceService/index");
+const priceService = require("../../services/tradeGenerator/priceService");
 
 // router.post("/login", priceService.);
 

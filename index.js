@@ -1,11 +1,15 @@
-require("dotenv").config()
+require("dotenv").config();
 const http = require("http");
 const app = require("./app");
-const { verifyJWTToken } = require('./utils/jwtToken')
+const { verifyJWTToken } = require("./utils/jwtToken");
 const initializeSocket = require("./socket");
 const socket = require("socket.io");
-const {sequelize} = require('./models')
-const priceService = require('./services/priceService');
+const { sequelize } = require("./models");
+const priceService = require("./services/tradeGenerator/priceService");
+const {
+  startLiveTradeEmitter,
+  stopLiveTradeEmitter,
+} = require("./services/tradeGenerator/liveTradeEmitter");
 const socketServer = http.createServer();
 
 const io = socket(socketServer, {
@@ -15,7 +19,7 @@ const io = socket(socketServer, {
   },
 });
 
-global.IO=io;
+global.IO = io;
 
 // io.use( async(socket, next) => {
 //   const token = socket.handshake.headers?.token;
@@ -49,10 +53,7 @@ global.IO=io;
 
 initializeSocket(io);
 
-
-
 const server = http.Server(app);
-
 
 const port = process.env.PORT;
 const socketPort = process.env.SOCKET_PORT;
@@ -60,11 +61,15 @@ const socketPort = process.env.SOCKET_PORT;
 const startServer = async () => {
   try {
     await sequelize.authenticate();
-    console.log('Connection to PostgreSQL has been established successfully.');
+    console.log("Connection to PostgreSQL has been established successfully.");
 
     // Start price update service
     const updateInterval = process.env.PRICE_UPDATE_INTERVAL || 30000;
     priceService.startPriceUpdates(parseInt(updateInterval));
+
+    // Start live trade emitter
+    const tradeInterval = process.env.TRADE_EMIT_INTERVAL || 10000;
+    startLiveTradeEmitter(io, parseInt(tradeInterval));
 
     server.listen(port, () => {
       console.log(`App is listening on port ${port}`);
@@ -73,10 +78,8 @@ const startServer = async () => {
     socketServer.listen(socketPort, () => {
       console.log(`Socket Server is listening on port ${socketPort}`);
     });
-
-
   } catch (error) {
-    console.error('Unable to connect to the database:', error);
+    console.error("Unable to connect to the database:", error);
     process.exit(1);
   }
 };
@@ -86,6 +89,9 @@ startServer();
 const exitHandler = () => {
   // Stop price update service
   priceService.stopPriceUpdates();
+
+  // Stop trade emitter
+  stopLiveTradeEmitter();
 
   if (server) {
     server.close(() => {
