@@ -17,6 +17,10 @@ const swaggerOptions = {
         url: process.env.API_URL || 'http://localhost:3000',
         description: 'Development server',
       },
+      {
+        url: 'https://api.exbotixgenie.com',
+        description: 'Production server',
+      },
     ],
     components: {
       securitySchemes: {
