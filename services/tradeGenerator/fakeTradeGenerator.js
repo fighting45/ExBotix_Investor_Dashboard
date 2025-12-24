@@ -37,6 +37,9 @@ const TRADING_PAIRS = [
   "LINK",
   "DOT",
   "AVAX",
+  "SUI",
+  "ENT",
+  "RIO",
 ];
 
 /**
@@ -67,7 +70,7 @@ async function generateFakeTrade() {
     const exchangeRate = await priceService.getPriceWithSpread(coinSymbol);
 
     // Random trade amount between $10,000 - $100,000
-    const amount = randomBetween(10000, 100000);
+    const amount = randomBetween(1000, 10000);
 
     // Strategy is always Arbitrage
     const strategy = "Arbitrage";
@@ -90,16 +93,16 @@ async function generateFakeTrade() {
       coinSymbol: coinSymbol,
       quoteCurrency: quoteCurrency,
       exchangeRate: exchangeRate.toFixed(2),
-      buyPrice: buyPrice.toFixed(2),
-      sellPrice: sellPrice.toFixed(2),
-      profit: profit.toFixed(2),
+      buyPrice: buyPrice.toFixed(4),
+      sellPrice: sellPrice.toFixed(4),
+      profit: profit.toFixed(4),
       amount: amount.toFixed(2),
       strategy: strategy,
       status: randomElement(STATUSES),
       timestamp: new Date().toISOString(),
       isReal: false, // Mark as fake trade
     };
-
+    console.log("This is trade object", trade);
     return trade;
   } catch (error) {
     console.error("Error generating fake trade:", error.message);
