@@ -1,4 +1,4 @@
 module.exports = {
-  ADMIN: "ADMIN",
+  ADMIN: "Admin",
   INVESTOR_VIEW_ONLY: "INVESTOR_VIEW_ONLY",
 };
