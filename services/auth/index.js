@@ -9,15 +9,20 @@ const login = asyncErrorHandler(async (req, res) => {
     where: {
       email: req.body?.email,
     },
-    raw:true
+    raw: true
   });
+
+  console.log("User :::::::: ", response);
   if (response) {
     const { password, ...rest } = response;
+
+    console.log("password :::::::: ", password);
+
 
     const isTrue = bcrypt.compareSync(req.body?.password, password);
 
     if (isTrue) {
-      
+
       await response.save();
 
       const accessToken = generateToken(rest);
