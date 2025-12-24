@@ -20,11 +20,10 @@ const login = asyncErrorHandler(async (req, res) => {
 
 
     const isTrue = bcrypt.compareSync(req.body?.password, password);
+    console.log("isTrue :::::::: ", isTrue);
+
 
     if (isTrue) {
-
-      await response.save();
-
       const accessToken = generateToken(rest);
 
       res.status(STATUS_CODES.SUCCESS).json({
