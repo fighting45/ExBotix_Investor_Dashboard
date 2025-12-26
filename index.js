@@ -16,17 +16,31 @@ const io = socket(socketServer, {
   cors: {
     origin: "*",
     methods: ["GET", "POST"],
+    credentials: true,
   },
+  transports: ["websocket", "polling"],
+  allowEIO3: true,
+  pingTimeout: 60000,
+  pingInterval: 25000,
 });
 
 global.IO = io;
 
 io.use(async (socket, next) => {
-  let token = socket.handshake.auth.token || socket.handshake.headers.authorization;
+  // Try multiple ways to get token
+  let token = socket.handshake.auth?.token || 
+              socket.handshake.headers?.token ||
+              socket.handshake.headers?.authorization ||
+              socket.handshake.query?.token;
 
-  console.log("headers : " , socket.handshake.headers)
-  console.log("auth : " , socket.handshake.auth)
+  console.log("Socket connection attempt:");
+  console.log("  - Headers:", JSON.stringify(socket.handshake.headers, null, 2));
+  console.log("  - Auth:", JSON.stringify(socket.handshake.auth, null, 2));
+  console.log("  - Query:", JSON.stringify(socket.handshake.query, null, 2));
+  console.log("  - Extracted token:", token ? `${token.substring(0, 20)}...` : "No token");
+
   if (!token) {
+    console.log("  - Error: No auth token given");
     return next(new Error("No auth token given"));
   }
 
@@ -39,13 +53,15 @@ io.use(async (socket, next) => {
     const result = await verifyJWTToken(token);
 
     if (result.err) {
+      console.log("  - Error: Invalid token -", result.err);
       return next(new Error("Invalid token"));
     } else {
       socket.user = result.decoded;
+      console.log("  - Success: Authenticated user -", socket.user.id);
       next();
     }
   } catch (error) {
-    console.log("Auth error : ", error)
+    console.log("  - Error: Authentication error -", error.message);
     next(new Error("Authentication error"));
   }
 });
@@ -74,8 +90,8 @@ const startServer = async () => {
       console.log(`App is listening on port ${port}`);
     });
 
-    socketServer.listen(socketPort, () => {
-      console.log(`Socket Server is listening on port ${socketPort}`);
+    socketServer.listen(socketPort, "0.0.0.0", () => {
+      console.log(`Socket Server is listening on port ${socketPort} (0.0.0.0)`);
     });
   } catch (error) {
     console.error("Unable to connect to the database:", error);
