@@ -3,34 +3,19 @@ const { createAdapter } = require("@socket.io/redis-adapter");
 const { redisClient, pubClient, subClient } = require("./redis");
 
 function initializeSocket(io) {
-    
+
     io.adapter(createAdapter(pubClient, subClient));
 
     io.on("connection", async (socket) => {
-
-        console.log("socket : ",socket.user)
-
         await redisClient.set(`user:${socket.user.id}`, socket.id);
         console.log(`User Id${socket.user.id}`);
 
 
         socket.join(socket.user.country);
 
-        if(socket?.user.role === 'Admin'){
-            socket.join('admin-support-room');
-        }
-
-        socket.on('join-support-room', (roomId) => {
-            socket.join(roomId);
-        });
 
         socket.on("test", (data) => {
             io.emit("test-response", data)
-        })
-
-
-        socket.on("withdraw-request-accepted-req", (data) => {
-            io.to(data?.country).emit("withdraw-request-accepted-res", data)
         })
 
 

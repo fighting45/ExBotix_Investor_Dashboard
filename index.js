@@ -21,8 +21,8 @@ const io = socket(socketServer, {
 
 global.IO = io;
 
-io.use( async(socket, next) => {
-  const token = socket.handshake.headers?.token;
+io.use(async (socket, next) => {
+  const token = socket.handshake.auth.token || socket.handshake.headers.authorization;
   if (!token) {
     return next(new Error("No auth token given"));
   }
@@ -37,7 +37,7 @@ io.use( async(socket, next) => {
       next();
     }
   } catch (error) {
-    console.log("Auth error : ",error)
+    console.log("Auth error : ", error)
     next(new Error("Authentication error"));
   }
 });
