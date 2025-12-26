@@ -1,55 +1,76 @@
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
+const { unless } = require("express-unless");
+
+// Swagger
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./config/swagger");
+
+// Routes
 const routes = require("./routes");
-const { unless } = require("express-unless");
-const auth = require("./middlewares/auth.js");
-const readOnly = require("./middlewares/readOnly.js");
-const { authenticateRoutes } = require("./config/unlessRoutes");
+
+// Middlewares
+const requestLogger = require("./middlewares/requestLogger");
 const { authenticate } = require("./middlewares/auth.middleware");
-const requestLogger = require('./middlewares/requestLogger.js')
+const readOnly = require("./middlewares/readOnly");
+const { authenticateRoutes } = require("./config/unlessRoutes");
+
+// Error handling
 const CustomError = require("./utils/CustomError");
 const globalErrorHandler = require("./controllers/error/errorController");
-const os = require('os')
-const path = require("path");
+
+// Scheduler
+require("./scheduler");
+
 const app = express();
-app.use(express.json());
+// ==================== Middleware Setup ====================
+// Body parser
+app.use(express.json({ limit: "5mb" }));
+app.use(express.urlencoded({ limit: "5mb", extended: false }));
+
+// CORS
 app.use(cors());
-app.use(express.json({ limit: '5mb' }));
-app.use(express.urlencoded({ limit: '5mb', extended: false }));
+
+// Static files
 app.use(express.static(path.join(__dirname, "public")));
 
-// Swagger documentation routes (before auth middleware)
+// Request logger
+app.use(requestLogger);
+
+// ==================== Public Routes (No Auth Required) ====================
+// Swagger documentation
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.get("/api-docs.json", (req, res) => {
   res.setHeader("Content-Type", "application/json");
   res.send(swaggerSpec);
 });
 
-app.use(requestLogger)
-
-// app.use(auth);
-// app.use(readOnly);
-
+// ==================== Authentication Middleware ====================
+// Apply authentication to all routes except those in authenticateRoutes
 authenticate.unless = unless;
 app.use(authenticate.unless(authenticateRoutes));
 
+// ==================== Protected Routes ====================
+// Read-only middleware (if needed)
+// app.use(readOnly);
+
+// Direct routes
 app.get("/api/investor/overview", (req, res) => {
   res.json({ ok: true });
 });
 
-require('./scheduler')
-
+// Route modules
 app.use(routes);
 
-// app.all("*", (req, res, next) => {
-//   const err = new CustomError(
-//     `Can't find ${req.originalUrl} on the server!`,
-//     404
-//   );
-//   next(err);
-// });
+// Catch-all route for 404 errors (Express 5 compatible)
+app.use((req, res, next) => {
+  const err = new CustomError(
+    `Can't find ${req.originalUrl} on the server!`,
+    404
+  );
+  next(err);
+});
 
 app.use(globalErrorHandler);
 
