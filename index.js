@@ -24,7 +24,8 @@ global.IO = io;
 io.use(async (socket, next) => {
   const token = socket.handshake.auth.token || socket.handshake.headers.authorization;
 
-  console.log("token : " , socket.handshake)
+  console.log("headers : " , socket.handshake.headers)
+  console.log("auth : " , socket.handshake.auth)
   if (!token) {
     return next(new Error("No auth token given"));
   }
