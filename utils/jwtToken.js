@@ -6,7 +6,10 @@ module.exports.generateToken = (userData) => {
 };
 
 module.exports.verifyJWTToken = async (token) => {
-    return jwt.verify(token, `${process.env.JWT_SECRETE_KEY}`, (err, decoded) => {
-      return { err: err, decoded: decoded };
-    });
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRETE_KEY);
+      return { err: null, decoded: decoded };
+    } catch (err) {
+      return { err: err, decoded: null };
+    }
   };

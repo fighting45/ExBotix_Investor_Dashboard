@@ -22,12 +22,17 @@ const io = socket(socketServer, {
 global.IO = io;
 
 io.use(async (socket, next) => {
-  const token = socket.handshake.auth.token || socket.handshake.headers.authorization;
+  let token = socket.handshake.auth.token || socket.handshake.headers.authorization;
 
   console.log("headers : " , socket.handshake.headers)
   console.log("auth : " , socket.handshake.auth)
   if (!token) {
     return next(new Error("No auth token given"));
+  }
+
+  // Strip "Bearer " prefix if present
+  if (token.startsWith("Bearer ")) {
+    token = token.split(" ")[1];
   }
 
   try {
