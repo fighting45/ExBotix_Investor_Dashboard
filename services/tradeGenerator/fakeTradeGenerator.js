@@ -102,7 +102,7 @@ async function generateFakeTrade() {
       timestamp: new Date().toISOString(),
       isReal: false, // Mark as fake trade
     };
-    console.log("This is trade object", trade);
+    // console.log("This is trade object", trade);
     return trade;
   } catch (error) {
     console.error("Error generating fake trade:", error.message);

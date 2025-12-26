@@ -19,6 +19,7 @@ const authenticate = async (req, res, next) => {
         .json({ message: TEXTS.INVALID_AUTH_TOKEN });
     } else {
 
+      console.log(result.decoded)
       req.user = result.decoded;
       next();
     }

@@ -8,6 +8,8 @@ function initializeSocket(io) {
 
     io.on("connection", async (socket) => {
 
+        console.log("socket : ",socket.user)
+
         await redisClient.set(`user:${socket.user.id}`, socket.id);
         console.log(`User Id${socket.user.id}`);
 

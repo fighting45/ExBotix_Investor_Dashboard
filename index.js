@@ -21,35 +21,26 @@ const io = socket(socketServer, {
 
 global.IO = io;
 
-// io.use( async(socket, next) => {
-//   const token = socket.handshake.headers?.token;
+io.use( async(socket, next) => {
+  const token = socket.handshake.headers?.token;
+  if (!token) {
+    return next(new Error("No auth token given"));
+  }
 
-//   if (!token) {
-//     return next(new Error("No auth token given"));
-//   }
+  try {
+    const result = await verifyJWTToken(token);
 
-//   try {
-//     const result = await verifyJWTToken(token);
-
-//     if (result.err) {
-//       return next(new Error("Invalid token"));
-//     } else {
-//       socket.user = result.decoded;
-//       const familyUsers = await familyUser.findAll({
-//         attributes:['familyId'],
-//         where: {
-//           userId: socket.user?.id,
-//         },
-//         raw: true
-//       });
-//       socket.user.familyUsers = familyUsers;
-//       next();
-//     }
-//   } catch (error) {
-//     console.log("Auth error : ",error)
-//     next(new Error("Authentication error"));
-//   }
-// });
+    if (result.err) {
+      return next(new Error("Invalid token"));
+    } else {
+      socket.user = result.decoded;
+      next();
+    }
+  } catch (error) {
+    console.log("Auth error : ",error)
+    next(new Error("Authentication error"));
+  }
+});
 
 initializeSocket(io);
 

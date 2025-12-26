@@ -5,6 +5,7 @@ const { generateToken } = require("../../utils/jwtToken");
 const { User } = require("../../models");
 
 const login = asyncErrorHandler(async (req, res) => {
+  console.log("body : ",req.body)
   const response = await User.findOne({
     where: {
       email: req.body?.email,
