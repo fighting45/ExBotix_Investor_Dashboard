@@ -20,22 +20,6 @@ const authenticate = async (req, res, next) => {
     } else {
 
       req.user = result.decoded;
-
-      if (req.user.role === 'customerSupport') {
-
-        const isExistUser = await User.findOne({
-          where: { id: req.user.id },
-          attribute: ["banned", "role"],
-          raw: true,
-        });
-
-        if (isExistUser && isExistUser.banned === true) {
-          return res.status(STATUS_CODES.UNAUTHORIZED).json({
-            statusCode: 401,
-            message: "You are banned",
-          });
-        }
-      }
       next();
     }
   } else {
